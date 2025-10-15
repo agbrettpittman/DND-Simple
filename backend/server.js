@@ -1,6 +1,7 @@
 // Require the framework and instantiate it
 import dotenv from 'dotenv'
 import Fastify from 'fastify'
+import users from './routers/users'
 
 // Load environment variables from .env file
 dotenv.config()
@@ -8,6 +9,8 @@ dotenv.config()
 const fastify = Fastify({
     logger: true
 })
+
+fastify.register(users, { prefix: '/users' })
 
 // Declare a route
 fastify.get('/', async (request, reply) => {
