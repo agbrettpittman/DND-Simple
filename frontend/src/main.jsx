@@ -1,6 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { createGlobalStyle } from 'styled-components'
+import { createGlobalStyle, ThemeProvider as StyledThemeProvider } from 'styled-components'
+import { ThemeProvider, CssBaseline } from '@mui/material'
+import theme from './theme.js'
 import App from './App.jsx'
 
 const GlobalStyles = createGlobalStyle`
@@ -41,7 +43,12 @@ const GlobalStyles = createGlobalStyle`
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <GlobalStyles />
-    <App />
+    <ThemeProvider theme={theme}>
+      <StyledThemeProvider theme={theme}>
+        <CssBaseline />
+        <GlobalStyles />
+        <App />
+      </StyledThemeProvider>
+    </ThemeProvider>
   </StrictMode>,
 )

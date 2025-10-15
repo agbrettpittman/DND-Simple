@@ -1,13 +1,16 @@
 import { useState } from 'react'
 import styled, { keyframes } from 'styled-components'
+import { Button, Container, Paper, Stack, Typography } from '@mui/material'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 
-const AppContainer = styled.div`
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+const AppContainer = styled(Container)`
+  && {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem;
+    text-align: center;
+  }
 `
 
 const logoSpin = keyframes`
@@ -51,57 +54,32 @@ const Title = styled.h1`
   line-height: 1.1;
 `
 
-const Card = styled.div`
+const Card = styled(Paper)`
   padding: 2em;
 `
 
-const CountButton = styled.button`
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-  
-  &:hover {
-    border-color: #646cff;
-  }
-  
-  &:focus,
-  &:focus-visible {
-    outline: 4px auto -webkit-focus-ring-color;
-  }
-  
-  @media (prefers-color-scheme: light) {
-    background-color: #f9f9f9;
+const CountButton = styled(Button)`
+  && {
+    text-transform: none;
   }
 `
 
 const ReadTheDocs = styled.p`
-  color: #888;
+  color: ${({ theme }) => theme.palette.text.secondary};
 `
 
 const StyledLink = styled.a`
   font-weight: 500;
-  color: #646cff;
+  color: ${({ theme }) => theme.palette.primary.main};
   text-decoration: inherit;
-  
+
   &:hover {
-    color: #535bf2;
-  }
-  
-  @media (prefers-color-scheme: light) {
-    &:hover {
-      color: #747bff;
-    }
+    color: ${({ theme }) => theme.palette.primary.dark};
   }
 `
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [Count, SetCount] = useState(0)
 
   return (
     <AppContainer>
@@ -113,14 +91,22 @@ function App() {
           <Logo src={reactLogo} className="react" alt="React logo" />
         </StyledLink>
       </LogoContainer>
-      <Title>Vite + React</Title>
-      <Card>
-        <CountButton onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </CountButton>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
+      <Typography variant="h3" component={Title} gutterBottom>
+        Vite + React + MUI
+      </Typography>
+      <Card elevation={3}>
+        <Stack spacing={2} alignItems="center">
+          <CountButton
+            variant="contained"
+            color="primary"
+            onClick={() => SetCount((Prev) => Prev + 1)}
+          >
+            Count is {Count}
+          </CountButton>
+          <Typography variant="body2" color="text.secondary">
+            Edit <code>src/App.jsx</code> and save to test HMR
+          </Typography>
+        </Stack>
       </Card>
       <ReadTheDocs>
         Click on the Vite and React logos to learn more
