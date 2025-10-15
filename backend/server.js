@@ -1,13 +1,37 @@
 // Require the framework and instantiate it
 import dotenv from 'dotenv'
 import Fastify from 'fastify'
-import users from './routers/users'
+import Swagger from '@fastify/swagger'
+import SwaggerUI from '@fastify/swagger-ui'
+import users from './routers/users/router.js'
 
 // Load environment variables from .env file
 dotenv.config()
 
 const fastify = Fastify({
     logger: true
+})
+
+// Register Swagger (OpenAPI) and Swagger UI
+await fastify.register(Swagger, {
+    openapi: {
+        info: {
+            title: 'DND-Simple API',
+            description: 'API documentation for the DND-Simple backend',
+            version: '1.0.0'
+        },
+        servers: [
+            { url: 'http://localhost:8000', description: 'Local server' }
+        ]
+    }
+})
+
+await fastify.register(SwaggerUI, {
+    routePrefix: '/docs',
+    uiConfig: {
+        docExpansion: 'list',
+        deepLinking: true
+    }
 })
 
 fastify.register(users, { prefix: '/users' })
