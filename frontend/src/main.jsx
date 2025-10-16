@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createGlobalStyle, ThemeProvider as StyledThemeProvider } from 'styled-components'
 import { ThemeProvider, CssBaseline } from '@mui/material'
+import { BrowserRouter } from 'react-router-dom'
 import theme from './theme.js'
 import App from './App.jsx'
 
@@ -47,7 +48,9 @@ createRoot(document.getElementById('root')).render(
       <StyledThemeProvider theme={theme}>
         <CssBaseline />
         <GlobalStyles />
-        <App />
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
       </StyledThemeProvider>
     </ThemeProvider>
   </StrictMode>,
