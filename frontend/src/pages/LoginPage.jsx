@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Alert, Box, Button, Paper, Stack, TextField, Typography } from '@mui/material'
 import styled from 'styled-components'
+import { useNavigate } from 'react-router-dom'
 
 const Card = styled(Paper)`
   && {
@@ -15,6 +16,7 @@ function LoginPage() {
   const [Email, SetEmail] = useState('')
   const [Password, SetPassword] = useState('')
   const [Error, SetError] = useState(null)
+  const Navigate = useNavigate()
 
   const onSubmit = (e) => {
     e.preventDefault()
@@ -27,11 +29,12 @@ function LoginPage() {
     // TODO: Call backend login; for now just log
     // console.log({ Email, Password })
     alert('Login clicked (mock)')
+    Navigate('/')
   }
 
   return (
     <Box>
-      <Typography variant="h4" gutterBottom>
+      <Typography variant="h4" gutterBottom align="center">
         Login
       </Typography>
       <Card elevation={3}>
