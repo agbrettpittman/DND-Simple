@@ -16,20 +16,37 @@ function LoginPage() {
   const [Email, SetEmail] = useState('')
   const [Password, SetPassword] = useState('')
   const [Error, SetError] = useState(null)
+  const [IsSubmitting, SetIsSubmitting] = useState(false)
   const Navigate = useNavigate()
+  const ApiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault()
-    // Placeholder auth for now
     if (!Email || !Password) {
       SetError('Please enter email and password')
       return
     }
     SetError(null)
-    // TODO: Call backend login; for now just log
-    // console.log({ Email, Password })
-    alert('Login clicked (mock)')
-    Navigate('/')
+    SetIsSubmitting(true)
+    try {
+      const res = await fetch(`${ApiBaseUrl}/users/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: Email, password: Password })
+      })
+      if (!res.ok) {
+        let message = 'Login failed'
+        const data = await res.json().catch(() => null)
+        if (data && data.message) message = data.message
+        throw new Error(message)
+      }
+      // success
+      Navigate('/')
+    } catch (err) {
+      SetError(err.message)
+    } finally {
+      SetIsSubmitting(false)
+    }
   }
 
   return (
@@ -57,8 +74,8 @@ function LoginPage() {
               required
               fullWidth
             />
-            <Button type="submit" variant="contained" color="primary">
-              Login
+            <Button type="submit" variant="contained" color="primary" disabled={IsSubmitting}>
+              {IsSubmitting ? 'Logging in…' : 'Login'}
             </Button>
             <Typography variant="body2" align="center">
               New here?{' '}

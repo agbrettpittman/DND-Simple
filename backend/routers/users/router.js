@@ -5,11 +5,12 @@ export default async function (fastify, opts) {
   const listStmt = db.prepare('SELECT id, name, email FROM users ORDER BY id DESC')
   const getStmt = db.prepare('SELECT id, name, email FROM users WHERE id = ?')
   const getByEmailStmt = db.prepare('SELECT id FROM users WHERE email = ?')
-  const insertStmt = db.prepare('INSERT INTO users (name, email) VALUES (?, ?)')
+  const insertStmt = db.prepare('INSERT INTO users (name, email, password) VALUES (?, ?, ?)')
   const replaceStmt = db.prepare('UPDATE users SET name = ?, email = ? WHERE id = ?')
   const patchNameStmt = db.prepare('UPDATE users SET name = COALESCE(?, name) WHERE id = ?')
   const patchEmailStmt = db.prepare('UPDATE users SET email = COALESCE(?, email) WHERE id = ?')
   const deleteStmt = db.prepare('DELETE FROM users WHERE id = ?')
+  const getAuthStmt = db.prepare('SELECT id, name, email FROM users WHERE email = ? AND password = ?')
 
   fastify.get('/', {schema: schema.GetAllUsers}, async (req, reply) => {
     const rows = listStmt.all()
@@ -27,16 +28,27 @@ export default async function (fastify, opts) {
   })
 
   fastify.post('/', { schema: schema.CreateUser }, async (req, reply) => {
-    const { name, email } = req.body
+    const { name, email, password } = req.body
     // uniqueness check
     const exists = getByEmailStmt.get(email)
     if (exists) {
       reply.code(409)
       return { message: 'Email already in use' }
     }
-    const info = insertStmt.run(name, email)
+    const info = insertStmt.run(name, email, password)
     reply.code(201)
     return getStmt.get(info.lastInsertRowid)
+  })
+
+  // Temporary login endpoint – compares plaintext password (to be replaced with hashing later)
+  fastify.post('/login', { schema: schema.LoginUser }, async (req, reply) => {
+    const { email, password } = req.body
+    const user = getAuthStmt.get(email, password)
+    if (!user) {
+      reply.code(401)
+      return { message: 'Invalid email or password' }
+    }
+    return user
   })
 
   fastify.put('/:id', { schema: schema.ReplaceUser }, async (req, reply) => {

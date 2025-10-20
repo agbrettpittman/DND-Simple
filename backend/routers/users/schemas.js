@@ -11,10 +11,12 @@ export const User = {
 
 export const UserCreate = {
     type: 'object',
-    required: ['name', 'email'],
+    required: ['name', 'email', 'password'],
     properties: {
         name: { type: 'string' },
-        email: { type: 'string', format: 'email' }
+        email: { type: 'string', format: 'email' },
+        // Temporary plaintext password.
+        password: { type: 'string', minLength: 1 }
     }
 }
 
@@ -35,6 +37,24 @@ export const UserParams = {
 export const ErrorResponse = {
     type: 'object',
     properties: { message: { type: 'string' } }
+}
+
+export const LoginRequest = {
+    type: 'object',
+    required: ['email', 'password'],
+    properties: {
+        email: { type: 'string', format: 'email' },
+        password: { type: 'string', minLength: 1 }
+    }
+}
+
+export const LoginResponse = {
+    type: 'object',
+    properties: {
+        id: { type: 'integer' },
+        name: { type: 'string' },
+        email: { type: 'string', format: 'email' }
+    }
 }
 
 export const GetAllUsers = {
@@ -69,11 +89,21 @@ export const CreateUser = {
     }
 }
 
+export const LoginUser = {
+    summary: 'Login user (temporary, no hashing)',
+    tags: ['Users'],
+    body: LoginRequest,
+    response: {
+        200: LoginResponse,
+        401: ErrorResponse
+    }
+}
+
 export const ReplaceUser = {
     summary: 'Replace user',
     tags: ['Users'],
     params: UserParams,
-    body: UserCreate,
+    body: UserUpdate,
     response: {
         200: User,
         404: ErrorResponse,
@@ -112,5 +142,6 @@ export const schema = {
     CreateUser,
     ReplaceUser,
     UpdateUser,
-    DeleteUser
+    DeleteUser,
+    LoginUser
 }

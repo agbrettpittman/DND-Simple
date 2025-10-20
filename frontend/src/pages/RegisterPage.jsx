@@ -15,16 +15,17 @@ const Card = styled(Paper)`
 function RegisterPage() {
   const [Name, SetName] = useState('')
   const [Email, SetEmail] = useState('')
+  const [Password, SetPassword] = useState('')
   const [Error, SetError] = useState(null)
   const [IsSubmitting, SetIsSubmitting] = useState(false)
   const Navigate = useNavigate()
 
-  const ApiBaseUrl = import.meta.env.VITE_API_BASE_URL || ''
+  const ApiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
 
   const onSubmit = async (e) => {
     e.preventDefault()
-    if (!Name || !Email) {
-      SetError('Please enter name and email')
+    if (!Name || !Email || !Password) {
+      SetError('Please enter name, email, and password')
       return
     }
 
@@ -34,7 +35,7 @@ function RegisterPage() {
       const res = await fetch(`${ApiBaseUrl}/users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: Name, email: Email })
+        body: JSON.stringify({ name: Name, email: Email, password: Password })
       })
 
       if (!res.ok) {
@@ -78,6 +79,14 @@ function RegisterPage() {
               required
               fullWidth
             />
+              <TextField
+                label="Password"
+                type="password"
+                value={Password}
+                onChange={(e) => SetPassword(e.target.value)}
+                required
+                fullWidth
+              />
             <Button type="submit" variant="contained" color="primary" disabled={IsSubmitting}>
               {IsSubmitting ? 'Registering…' : 'Register'}
             </Button>
