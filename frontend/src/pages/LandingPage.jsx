@@ -32,6 +32,16 @@ function LandingPage() {
           >
             Go to Login
           </Button>
+          <Typography color="text.secondary">New here?</Typography>
+          <Button
+            variant="outlined"
+            color="primary"
+            size="large"
+            component={RouterLink}
+            to="/register"
+          >
+            Create an Account
+          </Button>
         </Stack>
       </Card>
     </Stack>

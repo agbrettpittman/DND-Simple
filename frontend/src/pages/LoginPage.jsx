@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { Alert, Box, Button, Paper, Stack, TextField, Typography } from '@mui/material'
+import { Alert, Box, Button, Paper, Stack, TextField, Typography, Link } from '@mui/material'
 import styled from 'styled-components'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link as RouterLink } from 'react-router-dom'
 
 const Card = styled(Paper)`
   && {
@@ -60,6 +60,12 @@ function LoginPage() {
             <Button type="submit" variant="contained" color="primary">
               Login
             </Button>
+            <Typography variant="body2" align="center">
+              New here?{' '}
+              <Link component={RouterLink} to="/register">
+                Create an account
+              </Link>
+            </Typography>
           </Stack>
         </form>
       </Card>

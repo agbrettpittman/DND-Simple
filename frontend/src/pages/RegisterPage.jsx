@@ -1,0 +1,91 @@
+import { useState } from 'react'
+import { Alert, Box, Button, Paper, Stack, TextField, Typography } from '@mui/material'
+import styled from 'styled-components'
+import { useNavigate } from 'react-router-dom'
+
+const Card = styled(Paper)`
+  && {
+    max-width: 420px;
+    width: 100%;
+    padding: 2rem;
+    margin: 0 auto;
+  }
+`
+
+function RegisterPage() {
+  const [Name, SetName] = useState('')
+  const [Email, SetEmail] = useState('')
+  const [Error, SetError] = useState(null)
+  const [IsSubmitting, SetIsSubmitting] = useState(false)
+  const Navigate = useNavigate()
+
+  const ApiBaseUrl = import.meta.env.VITE_API_BASE_URL || ''
+
+  const onSubmit = async (e) => {
+    e.preventDefault()
+    if (!Name || !Email) {
+      SetError('Please enter name and email')
+      return
+    }
+
+    SetError(null)
+    SetIsSubmitting(true)
+    try {
+      const res = await fetch(`${ApiBaseUrl}/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: Name, email: Email })
+      })
+
+      if (!res.ok) {
+        let message = 'Failed to register'
+        const data = await res.json().catch(() => null)
+        if (data && data.message) message = data.message
+        throw new Error(message)
+      }
+
+      // Created successfully (expect 201)
+      alert('Registration successful! Please log in.')
+      Navigate('/login')
+    } catch (err) {
+      SetError(err.message)
+    } finally {
+      SetIsSubmitting(false)
+    }
+  }
+
+  return (
+    <Box>
+      <Typography variant="h4" gutterBottom align="center">
+        Create Account
+      </Typography>
+      <Card elevation={3}>
+        <form onSubmit={onSubmit}>
+          <Stack spacing={2}>
+            {Error && <Alert severity="error">{Error}</Alert>}
+            <TextField
+              label="Name"
+              value={Name}
+              onChange={(e) => SetName(e.target.value)}
+              required
+              fullWidth
+            />
+            <TextField
+              label="Email"
+              type="email"
+              value={Email}
+              onChange={(e) => SetEmail(e.target.value)}
+              required
+              fullWidth
+            />
+            <Button type="submit" variant="contained" color="primary" disabled={IsSubmitting}>
+              {IsSubmitting ? 'Registering…' : 'Register'}
+            </Button>
+          </Stack>
+        </form>
+      </Card>
+    </Box>
+  )
+}
+
+export default RegisterPage
