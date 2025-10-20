@@ -144,3 +144,6 @@ dist
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# SQLite data
+data/

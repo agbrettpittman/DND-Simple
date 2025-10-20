@@ -3,7 +3,7 @@
 export const User = {
     type: 'object',
     properties: {
-        id: { type: 'string' },
+        id: { type: 'integer' },
         name: { type: 'string' },
         email: { type: 'string', format: 'email' }
     }
@@ -28,7 +28,7 @@ export const UserUpdate = {
 
 export const UserParams = {
     type: 'object',
-    properties: { id: { type: 'string' } },
+    properties: { id: { type: 'integer' } },
     required: ['id']
 }
 
@@ -64,7 +64,8 @@ export const CreateUser = {
     tags: ['Users'],
     body: UserCreate,
     response: {
-        201: User
+        201: User,
+        409: ErrorResponse
     }
 }
 
@@ -74,7 +75,9 @@ export const ReplaceUser = {
     params: UserParams,
     body: UserCreate,
     response: {
-        200: User
+        200: User,
+        404: ErrorResponse,
+        409: ErrorResponse
     }
 }
 
@@ -84,7 +87,9 @@ export const UpdateUser = {
     params: UserParams,
     body: UserUpdate,
     response: {
-        200: User
+        200: User,
+        404: ErrorResponse,
+        409: ErrorResponse
     }
 }
 
