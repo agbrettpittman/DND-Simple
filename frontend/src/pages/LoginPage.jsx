@@ -15,7 +15,7 @@ const Card = styled(Paper)`
 function LoginPage() {
   const [Email, SetEmail] = useState('')
   const [Password, SetPassword] = useState('')
-  const [Error, SetError] = useState(null)
+  const [ErrorMessage, SetErrorMessage] = useState(null)
   const [IsSubmitting, SetIsSubmitting] = useState(false)
   const Navigate = useNavigate()
   const ApiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
@@ -23,10 +23,10 @@ function LoginPage() {
   const onSubmit = async (e) => {
     e.preventDefault()
     if (!Email || !Password) {
-      SetError('Please enter email and password')
+      SetErrorMessage('Please enter email and password')
       return
     }
-    SetError(null)
+    SetErrorMessage(null)
     SetIsSubmitting(true)
     try {
       const res = await fetch(`${ApiBaseUrl}/users/login`, {
@@ -43,7 +43,8 @@ function LoginPage() {
       // success
       Navigate('/')
     } catch (err) {
-      SetError(err.message)
+      console.error(err)
+      SetErrorMessage(err.message)
     } finally {
       SetIsSubmitting(false)
     }
@@ -57,7 +58,7 @@ function LoginPage() {
       <Card elevation={3}>
         <form onSubmit={onSubmit}>
           <Stack spacing={2}>
-            {Error && <Alert severity="error">{Error}</Alert>}
+            {ErrorMessage && <Alert severity="error">{ErrorMessage}</Alert>}
             <TextField
               label="Email"
               type="email"
