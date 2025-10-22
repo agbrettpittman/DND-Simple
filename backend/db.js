@@ -13,7 +13,7 @@ const DBPath = path.resolve(DBDir, DBFileName)
 
 // Ensure data directory exists
 if (!fs.existsSync(DBDir)) {
-  fs.mkdirSync(DBDir, { recursive: true })
+    fs.mkdirSync(DBDir, { recursive: true })
 }
 
 // Open database with sane defaults (WAL for better concurrency)
