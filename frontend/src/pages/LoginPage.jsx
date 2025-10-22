@@ -13,82 +13,82 @@ const Card = styled(Paper)`
 `
 
 function LoginPage() {
-  const [Email, SetEmail] = useState('')
-  const [Password, SetPassword] = useState('')
-  const [ErrorMessage, SetErrorMessage] = useState(null)
-  const [IsSubmitting, SetIsSubmitting] = useState(false)
-  const Navigate = useNavigate()
-  const ApiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
+    const [Email, SetEmail] = useState('')
+    const [Password, SetPassword] = useState('')
+    const [ErrorMessage, SetErrorMessage] = useState(null)
+    const [IsSubmitting, SetIsSubmitting] = useState(false)
+    const Navigate = useNavigate()
+    const ApiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
 
-  const onSubmit = async (e) => {
-    e.preventDefault()
-    if (!Email || !Password) {
-      SetErrorMessage('Please enter email and password')
-      return
+    const onSubmit = async (e) => {
+        e.preventDefault()
+        if (!Email || !Password) {
+            SetErrorMessage('Please enter email and password')
+            return
+        }
+        SetErrorMessage(null)
+        SetIsSubmitting(true)
+        try {
+            const res = await fetch(`${ApiBaseUrl}/users/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: Email, password: Password })
+            })
+            if (!res.ok) {
+                let message = 'Login failed'
+                const data = await res.json().catch(() => null)
+                if (data && data.message) message = data.message
+                throw new Error(message)
+            }
+            // success
+            Navigate('/')
+        } catch (err) {
+            console.error(err)
+            SetErrorMessage(err.message)
+        } finally {
+            SetIsSubmitting(false)
+        }
     }
-    SetErrorMessage(null)
-    SetIsSubmitting(true)
-    try {
-      const res = await fetch(`${ApiBaseUrl}/users/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: Email, password: Password })
-      })
-      if (!res.ok) {
-        let message = 'Login failed'
-        const data = await res.json().catch(() => null)
-        if (data && data.message) message = data.message
-        throw new Error(message)
-      }
-      // success
-      Navigate('/')
-    } catch (err) {
-      console.error(err)
-      SetErrorMessage(err.message)
-    } finally {
-      SetIsSubmitting(false)
-    }
-  }
 
-  return (
-    <Box>
-      <Typography variant="h4" gutterBottom align="center">
-        Login
-      </Typography>
-      <Card elevation={3}>
-        <form onSubmit={onSubmit}>
-          <Stack spacing={2}>
-            {ErrorMessage && <Alert severity="error">{ErrorMessage}</Alert>}
-            <TextField
-              label="Email"
-              type="email"
-              value={Email}
-              onChange={(e) => SetEmail(e.target.value)}
-              required
-              fullWidth
-            />
-            <TextField
-              label="Password"
-              type="password"
-              value={Password}
-              onChange={(e) => SetPassword(e.target.value)}
-              required
-              fullWidth
-            />
-            <Button type="submit" variant="contained" color="primary" disabled={IsSubmitting}>
-              {IsSubmitting ? 'Logging in…' : 'Login'}
-            </Button>
-            <Typography variant="body2" align="center">
-              New here?{' '}
-              <Link component={RouterLink} to="/register">
-                Create an account
-              </Link>
+    return (
+        <Box>
+            <Typography variant="h4" gutterBottom align="center">
+                Login
             </Typography>
-          </Stack>
-        </form>
-      </Card>
-    </Box>
-  )
+            <Card elevation={3}>
+                <form onSubmit={onSubmit}>
+                    <Stack spacing={2}>
+                        {ErrorMessage && <Alert severity="error">{ErrorMessage}</Alert>}
+                        <TextField
+                            label="Email"
+                            type="email"
+                            value={Email}
+                            onChange={(e) => SetEmail(e.target.value)}
+                            required
+                            fullWidth
+                        />
+                        <TextField
+                            label="Password"
+                            type="password"
+                            value={Password}
+                            onChange={(e) => SetPassword(e.target.value)}
+                            required
+                            fullWidth
+                        />
+                        <Button type="submit" variant="contained" color="primary" disabled={IsSubmitting}>
+                            {IsSubmitting ? 'Logging in…' : 'Login'}
+                        </Button>
+                        <Typography variant="body2" align="center">
+                            New here?{' '}
+                            <Link component={RouterLink} to="/register">
+                                Create an account
+                            </Link>
+                        </Typography>
+                    </Stack>
+                </form>
+            </Card>
+        </Box>
+    )
 }
 
 export default LoginPage

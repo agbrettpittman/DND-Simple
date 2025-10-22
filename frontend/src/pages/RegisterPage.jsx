@@ -13,88 +13,88 @@ const Card = styled(Paper)`
 `
 
 function RegisterPage() {
-  const [Name, SetName] = useState('')
-  const [Email, SetEmail] = useState('')
-  const [Password, SetPassword] = useState('')
-  const [Error, SetError] = useState(null)
-  const [IsSubmitting, SetIsSubmitting] = useState(false)
-  const Navigate = useNavigate()
+    const [Name, SetName] = useState('')
+    const [Email, SetEmail] = useState('')
+    const [Password, SetPassword] = useState('')
+    const [Error, SetError] = useState(null)
+    const [IsSubmitting, SetIsSubmitting] = useState(false)
+    const Navigate = useNavigate()
 
-  const ApiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
+    const ApiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
 
-  const onSubmit = async (e) => {
-    e.preventDefault()
-    if (!Name || !Email || !Password) {
-      SetError('Please enter name, email, and password')
-      return
+    const onSubmit = async (e) => {
+        e.preventDefault()
+        if (!Name || !Email || !Password) {
+            SetError('Please enter name, email, and password')
+            return
+        }
+
+        SetError(null)
+        SetIsSubmitting(true)
+        try {
+            const res = await fetch(`${ApiBaseUrl}/users`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: Name, email: Email, password: Password })
+            })
+
+            if (!res.ok) {
+                let message = 'Failed to register'
+                const data = await res.json().catch(() => null)
+                if (data && data.message) message = data.message
+                throw new Error(message)
+            }
+
+            // Created successfully (expect 201)
+            alert('Registration successful! Please log in.')
+            Navigate('/login')
+        } catch (err) {
+            SetError(err.message)
+        } finally {
+            SetIsSubmitting(false)
+        }
     }
 
-    SetError(null)
-    SetIsSubmitting(true)
-    try {
-      const res = await fetch(`${ApiBaseUrl}/users`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: Name, email: Email, password: Password })
-      })
-
-      if (!res.ok) {
-        let message = 'Failed to register'
-        const data = await res.json().catch(() => null)
-        if (data && data.message) message = data.message
-        throw new Error(message)
-      }
-
-      // Created successfully (expect 201)
-      alert('Registration successful! Please log in.')
-      Navigate('/login')
-    } catch (err) {
-      SetError(err.message)
-    } finally {
-      SetIsSubmitting(false)
-    }
-  }
-
-  return (
-    <Box>
-      <Typography variant="h4" gutterBottom align="center">
-        Create Account
-      </Typography>
-      <Card elevation={3}>
-        <form onSubmit={onSubmit}>
-          <Stack spacing={2}>
-            {Error && <Alert severity="error">{Error}</Alert>}
-            <TextField
-              label="Name"
-              value={Name}
-              onChange={(e) => SetName(e.target.value)}
-              required
-              fullWidth
-            />
-            <TextField
-              label="Email"
-              type="email"
-              value={Email}
-              onChange={(e) => SetEmail(e.target.value)}
-              required
-              fullWidth
-            />
-              <TextField
-                label="Password"
-                type="password"
-                value={Password}
-                onChange={(e) => SetPassword(e.target.value)}
-                required
-                fullWidth
-              />
-            <Button type="submit" variant="contained" color="primary" disabled={IsSubmitting}>
-              {IsSubmitting ? 'Registering…' : 'Register'}
-            </Button>
-          </Stack>
-        </form>
-      </Card>
-    </Box>
-  )
+    return (
+        <Box>
+            <Typography variant="h4" gutterBottom align="center">
+                Create Account
+            </Typography>
+            <Card elevation={3}>
+                <form onSubmit={onSubmit}>
+                    <Stack spacing={2}>
+                        {Error && <Alert severity="error">{Error}</Alert>}
+                        <TextField
+                            label="Name"
+                            value={Name}
+                            onChange={(e) => SetName(e.target.value)}
+                            required
+                            fullWidth
+                        />
+                        <TextField
+                            label="Email"
+                            type="email"
+                            value={Email}
+                            onChange={(e) => SetEmail(e.target.value)}
+                            required
+                            fullWidth
+                        />
+                        <TextField
+                            label="Password"
+                            type="password"
+                            value={Password}
+                            onChange={(e) => SetPassword(e.target.value)}
+                            required
+                            fullWidth
+                        />
+                        <Button type="submit" variant="contained" color="primary" disabled={IsSubmitting}>
+                            {IsSubmitting ? 'Registering…' : 'Register'}
+                        </Button>
+                    </Stack>
+                </form>
+            </Card>
+        </Box>
+    )
 }
 
 export default RegisterPage

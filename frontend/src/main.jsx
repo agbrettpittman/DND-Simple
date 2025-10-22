@@ -43,15 +43,15 @@ const GlobalStyles = createGlobalStyle`
 `
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <ThemeProvider theme={theme}>
-      <StyledThemeProvider theme={theme}>
-        <CssBaseline />
-        <GlobalStyles />
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </StyledThemeProvider>
-    </ThemeProvider>
-  </StrictMode>,
+    <StrictMode>
+        <ThemeProvider theme={theme}>
+            <StyledThemeProvider theme={theme}>
+                <CssBaseline />
+                <GlobalStyles />
+                <BrowserRouter>
+                    <App />
+                </BrowserRouter>
+            </StyledThemeProvider>
+        </ThemeProvider>
+    </StrictMode>,
 )
