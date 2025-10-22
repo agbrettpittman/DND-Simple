@@ -1,7 +1,12 @@
 import { schema } from './schemas.js'
 import db from '../../db.js'
+import bcrypt from 'bcrypt'
+
+const SaltRounds = process.env.SALT_ROUNDS ? parseInt(process.env.SALT_ROUNDS) : 10
 
 export default async function (fastify, opts) {
+
+  //Prepared Statements
   const listStmt = db.prepare('SELECT id, name, email FROM users ORDER BY id DESC')
   const getStmt = db.prepare('SELECT id, name, email FROM users WHERE id = ?')
   const getByEmailStmt = db.prepare('SELECT id FROM users WHERE email = ?')
@@ -10,7 +15,8 @@ export default async function (fastify, opts) {
   const patchNameStmt = db.prepare('UPDATE users SET name = COALESCE(?, name) WHERE id = ?')
   const patchEmailStmt = db.prepare('UPDATE users SET email = COALESCE(?, email) WHERE id = ?')
   const deleteStmt = db.prepare('DELETE FROM users WHERE id = ?')
-  const getAuthStmt = db.prepare('SELECT id, name, email FROM users WHERE email = ? AND password = ?')
+  const getAuthStmt = db.prepare('SELECT id, name, email, password FROM users WHERE email = ?')
+
 
   fastify.get('/', {schema: schema.GetAllUsers}, async (req, reply) => {
     const rows = listStmt.all()
@@ -35,20 +41,31 @@ export default async function (fastify, opts) {
       reply.code(409)
       return { message: 'Email already in use' }
     }
-    const info = insertStmt.run(name, email, password)
-    reply.code(201)
-    return getStmt.get(info.lastInsertRowid)
+    bcrypt.hash(password, SaltRounds, function (err, hash) {
+        // Store hash in your password DB.
+        const info = insertStmt.run(name, email, hash)
+        reply.code(201)
+        return getStmt.get(info.lastInsertRowid)
+    });
   })
 
   // Temporary login endpoint – compares plaintext password (to be replaced with hashing later)
   fastify.post('/login', { schema: schema.LoginUser }, async (req, reply) => {
     const { email, password } = req.body
-    const user = getAuthStmt.get(email, password)
-    if (!user) {
-      reply.code(401)
-      return { message: 'Invalid email or password' }
+    const user = getAuthStmt.get(email)
+    try {
+        const authStatus = await bcrypt.compare(password, user.password)
+        if (!authStatus) {
+            reply.code(401).send({ message: 'Invalid email or password' })
+        }
+        reply.code(200).send({
+            id: user.id,
+            name: user.name,
+            email: user.email
+        })
+    } catch (err) {
+        reply.code(500).send({ message: 'Internal server error' })
     }
-    return user
   })
 
   fastify.put('/:id', { schema: schema.ReplaceUser }, async (req, reply) => {
