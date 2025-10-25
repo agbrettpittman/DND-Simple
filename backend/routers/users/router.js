@@ -1,31 +1,26 @@
 import { schema } from './schemas.js'
-import db from '../../db.js'
 import bcrypt from 'bcrypt'
+import prisma from '../../prisma/client.js'
 
 const SaltRounds = process.env.SALT_ROUNDS ? parseInt(process.env.SALT_ROUNDS) : 10
 
 export default async function (fastify, opts) {
-
-    //Prepared Statements
-    const listStmt = db.prepare('SELECT id, name, email FROM users ORDER BY id DESC')
-    const getStmt = db.prepare('SELECT id, name, email FROM users WHERE id = ?')
-    const getByEmailStmt = db.prepare('SELECT id FROM users WHERE email = ?')
-    const insertStmt = db.prepare('INSERT INTO users (name, email, password) VALUES (?, ?, ?)')
-    const replaceStmt = db.prepare('UPDATE users SET name = ?, email = ? WHERE id = ?')
-    const patchNameStmt = db.prepare('UPDATE users SET name = COALESCE(?, name) WHERE id = ?')
-    const patchEmailStmt = db.prepare('UPDATE users SET email = COALESCE(?, email) WHERE id = ?')
-    const deleteStmt = db.prepare('DELETE FROM users WHERE id = ?')
-    const getAuthStmt = db.prepare('SELECT id, name, email, password FROM users WHERE email = ?')
-
-
     fastify.get('/', { schema: schema.GetAllUsers }, async (req, reply) => {
-        const rows = listStmt.all()
+        const rows = await prisma.user.findMany({
+            select: { id: true, name: true, email: true },
+            orderBy: { id: 'desc' }
+        })
+
+        console.log(`Retrieved ${rows.length} users from database.`)
         return rows
     })
 
     fastify.get('/:id', { schema: schema.GetOneUser }, async (req, reply) => {
         const { id } = req.params
-        const user = getStmt.get(id)
+        const user = await prisma.user.findUnique({
+            where: { id },
+            select: { id: true, name: true, email: true }
+        })
         if (!user) {
             reply.code(404)
             return { message: 'User not found' }
@@ -35,24 +30,43 @@ export default async function (fastify, opts) {
 
     fastify.post('/', { schema: schema.CreateUser }, async (req, reply) => {
         const { name, email, password } = req.body
+        console.log(`Creating user with email: ${email}`)
         // uniqueness check
-        const exists = getByEmailStmt.get(email)
+        const exists = await prisma.user.findUnique({ where: { email }, select: { id: true } })
         if (exists) {
             reply.code(409)
             return { message: 'Email already in use' }
         }
-        bcrypt.hash(password, SaltRounds, function (err, hash) {
-            // Store hash in your password DB.
-            const info = insertStmt.run(name, email, hash)
+        try {
+            const hash = await bcrypt.hash(password, SaltRounds)
+            const created = await prisma.user.create({
+                data: { name, email, password: hash },
+                select: { id: true, name: true, email: true }
+            })
             reply.code(201)
-            return getStmt.get(info.lastInsertRowid)
-        });
+            return created
+        } catch (err) {
+            // In case of race condition on unique constraint
+            if (err.code === 'P2002') {
+                reply.code(409)
+                return { message: 'Email already in use' }
+            }
+            reply.code(500)
+            return { message: 'Internal server error' }
+        }
     })
 
     // Temporary login endpoint – compares plaintext password (to be replaced with hashing later)
     fastify.post('/login', { schema: schema.LoginUser }, async (req, reply) => {
         const { email, password } = req.body
-        const user = getAuthStmt.get(email)
+        const user = await prisma.user.findUnique({
+            where: { email },
+            select: { id: true, name: true, email: true, password: true }
+        })
+        if (!user) {
+            reply.code(401).send({ message: 'Invalid email or password' })
+            return
+        }
         try {
             const authStatus = await bcrypt.compare(password, user.password)
             if (!authStatus) {
@@ -71,51 +85,61 @@ export default async function (fastify, opts) {
     fastify.put('/:id', { schema: schema.ReplaceUser }, async (req, reply) => {
         const { id } = req.params
         const { name, email } = req.body
-        const user = getStmt.get(id)
+        const user = await prisma.user.findUnique({ where: { id }, select: { id: true, email: true } })
         if (!user) {
             reply.code(404)
             return { message: 'User not found' }
         }
         // If email changed, check uniqueness
         if (email !== user.email) {
-            const exists = getByEmailStmt.get(email)
+            const exists = await prisma.user.findUnique({ where: { email }, select: { id: true } })
             if (exists) {
                 reply.code(409)
                 return { message: 'Email already in use' }
             }
         }
-        replaceStmt.run(name, email, id)
-        return getStmt.get(id)
+        const updated = await prisma.user.update({
+            where: { id },
+            data: { name, email },
+            select: { id: true, name: true, email: true }
+        })
+        return updated
     })
 
     fastify.patch('/:id', { schema: schema.UpdateUser }, async (req, reply) => {
         const { id } = req.params
-        const current = getStmt.get(id)
+        const current = await prisma.user.findUnique({ where: { id }, select: { id: true, email: true } })
         if (!current) {
             reply.code(404)
             return { message: 'User not found' }
         }
         const { name, email } = req.body
         if (email && email !== current.email) {
-            const exists = getByEmailStmt.get(email)
+            const exists = await prisma.user.findUnique({ where: { email }, select: { id: true } })
             if (exists) {
                 reply.code(409)
                 return { message: 'Email already in use' }
             }
         }
-        if (name !== undefined) patchNameStmt.run(name, id)
-        if (email !== undefined) patchEmailStmt.run(email, id)
-        return getStmt.get(id)
+        const data = {}
+        if (name !== undefined) data.name = name
+        if (email !== undefined) data.email = email
+        const updated = await prisma.user.update({
+            where: { id },
+            data,
+            select: { id: true, name: true, email: true }
+        })
+        return updated
     })
 
     fastify.delete('/:id', { schema: schema.DeleteUser }, async (req, reply) => {
         const { id } = req.params
-        const user = getStmt.get(id)
+        const user = await prisma.user.findUnique({ where: { id }, select: { id: true } })
         if (!user) {
             reply.code(404)
             return { message: 'User not found' }
         }
-        deleteStmt.run(id)
+        await prisma.user.delete({ where: { id } })
         reply.code(204)
         return null
     })

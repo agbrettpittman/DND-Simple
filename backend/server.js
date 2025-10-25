@@ -4,6 +4,7 @@ import Fastify from 'fastify'
 import Swagger from '@fastify/swagger'
 import SwaggerUI from '@fastify/swagger-ui'
 import users from './routers/users/router.js'
+import prisma from './prisma/client.js'
 
 // Load environment variables from .env file
 dotenv.config()
@@ -46,6 +47,11 @@ const start = async () => {
     try {
         const host = process.env.SERVER_IP || '127.0.0.1'
         const port = parseInt(process.env.SERVER_PORT) || 8000
+        
+        // Ensure Prisma disconnects cleanly on shutdown
+        fastify.addHook('onClose', async () => {
+            await prisma.$disconnect()
+        })
         
         await fastify.listen({ host, port })
         console.log(`Server listening on ${host}:${port}`)

@@ -7,11 +7,18 @@
     "@fastify/swagger-ui": "^5.2.3",
     "bcrypt": "^6.0.0",
     "better-sqlite3": "^11.8.1",
+    "@prisma/client": "^5.20.0",
     "dotenv": "^17.2.3",
     "fastify": "^5.6.1"
   },
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "node --watch server.js",
+    "prisma": "prisma",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev --name init"
+  },
+  "devDependencies": {
+    "prisma": "^5.20.0"
   }
 }
