@@ -1,6 +1,6 @@
 import { schema } from './schemas.js'
 import bcrypt from 'bcrypt'
-import prisma from '../../prisma/client.js'
+import prisma from '#prisma'
 
 const SaltRounds = process.env.SALT_ROUNDS ? parseInt(process.env.SALT_ROUNDS) : 10
 

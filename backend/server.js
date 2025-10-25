@@ -3,8 +3,8 @@ import dotenv from 'dotenv'
 import Fastify from 'fastify'
 import Swagger from '@fastify/swagger'
 import SwaggerUI from '@fastify/swagger-ui'
-import users from './routers/users/router.js'
-import prisma from './prisma/client.js'
+import users from '#routers/users/router.js'
+import prisma from '#prisma'
 
 // Load environment variables from .env file
 dotenv.config()

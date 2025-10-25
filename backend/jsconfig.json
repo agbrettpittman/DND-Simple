@@ -1,0 +1,23 @@
+{
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "#routers/*": [
+                "routers/*"
+            ],
+            "#data/*": [
+                "data/*"
+            ],
+            "#prisma": [
+                "prisma/client.js"
+            ],
+            "#prisma/*": [
+                "prisma/*"
+            ]
+        }
+    },
+    "exclude": [
+        "node_modules",
+        "data/db"
+    ]
+}
