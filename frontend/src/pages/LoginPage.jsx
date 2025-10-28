@@ -40,7 +40,14 @@ function LoginPage() {
                 if (data && data.message) message = data.message
                 throw new Error(message)
             }
-            // success
+            // success: store current user locally for simple auth state
+            const user = await res.json()
+            try {
+                localStorage.setItem('currentUser', JSON.stringify(user))
+            } catch (err) {
+                // Storage may be unavailable; proceed without persisting session
+                console.warn('Failed to store currentUser in localStorage', err)
+            }
             Navigate('/')
         } catch (err) {
             console.error(err)

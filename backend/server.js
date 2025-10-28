@@ -4,6 +4,7 @@ import Fastify from 'fastify'
 import Swagger from '@fastify/swagger'
 import SwaggerUI from '@fastify/swagger-ui'
 import users from '#routers/users/router.js'
+import campaigns from '#routers/campaigns/router.js'
 import prisma from '#prisma'
 
 // Load environment variables from .env file
@@ -36,6 +37,7 @@ await fastify.register(SwaggerUI, {
 })
 
 fastify.register(users, { prefix: '/users' })
+fastify.register(campaigns, { prefix: '/campaigns' })
 
 // Declare a route
 fastify.get('/', async (request, reply) => {
