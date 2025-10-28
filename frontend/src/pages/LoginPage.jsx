@@ -20,7 +20,7 @@ function LoginPage() {
     const Navigate = useNavigate()
     const ApiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
 
-    const onSubmit = async (e) => {
+    async function onSubmit(e) {
         e.preventDefault()
         if (!Email || !Password) {
             SetErrorMessage('Please enter email and password')

@@ -16,7 +16,7 @@ function AppLayout() {
   useEffect(() => {
     try {
       SetIsLoggedIn(!!localStorage.getItem('currentUser'))
-    } catch (err) {
+    } catch {
       SetIsLoggedIn(false)
     }
   }, [])
@@ -24,7 +24,9 @@ function AppLayout() {
   const onLogout = () => {
     try {
       localStorage.removeItem('currentUser')
-    } catch (err) {}
+    } catch (err) {
+      console.warn('Failed to clear currentUser from localStorage', err)
+    }
     window.location.href = '/'
   }
 

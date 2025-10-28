@@ -22,7 +22,7 @@ function RegisterPage() {
 
     const ApiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
 
-    const onSubmit = async (e) => {
+    async function onSubmit(e) {
         e.preventDefault()
         if (!Name || !Email || !Password) {
             SetError('Please enter name, email, and password')

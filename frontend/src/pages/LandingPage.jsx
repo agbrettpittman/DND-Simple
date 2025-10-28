@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Alert, Box, Button, Paper, Stack, TextField, Typography, Divider } from '@mui/material'
 import styled from 'styled-components'
 import { Link as RouterLink } from 'react-router-dom'
@@ -20,6 +20,22 @@ function LandingPage() {
     const [IsLoadingCampaigns, SetIsLoadingCampaigns] = useState(false)
     const ApiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
 
+    const getCampaignData = useCallback(async () => {
+        if (!CurrentUser) return
+        SetIsLoadingCampaigns(true)
+        try {
+            const res = await fetch(`${ApiBaseUrl}/campaigns?creatorId=${CurrentUser.id}`)
+            const data = await res.json()
+            if (!res.ok) throw new Error(data?.message || 'Failed to load campaigns')
+            SetCampaigns(Array.isArray(data) ? data : [])
+        } catch (err) {
+            console.error(err)
+            SetErrorMessage(err.message)
+        } finally {
+            SetIsLoadingCampaigns(false)
+        }
+    }, [ApiBaseUrl, CurrentUser])
+
     // Load current user from localStorage once
     useEffect(() => {
         try {
@@ -33,29 +49,12 @@ function LandingPage() {
         }
     }, [])
 
-    const CanCreate = useMemo(() => !!CurrentUser, [CurrentUser])
-
     // Fetch user's campaigns when logged in
     useEffect(() => {
-        const run = async () => {
-            if (!CurrentUser) return
-            SetIsLoadingCampaigns(true)
-            try {
-                const res = await fetch(`${ApiBaseUrl}/campaigns?creatorId=${CurrentUser.id}`)
-                const data = await res.json()
-                if (!res.ok) throw new Error(data?.message || 'Failed to load campaigns')
-                SetCampaigns(Array.isArray(data) ? data : [])
-            } catch (err) {
-                console.error(err)
-                SetErrorMessage(err.message)
-            } finally {
-                SetIsLoadingCampaigns(false)
-            }
-        }
-        run()
-    }, [ApiBaseUrl, CurrentUser])
+        getCampaignData()
+    }, [getCampaignData])
 
-    const onCreate = async (e) => {
+    async function onCreate(e) {
         e.preventDefault()
         if (!Name || !Description) {
             SetErrorMessage('Please enter a name and description')
@@ -148,7 +147,7 @@ function LandingPage() {
                             minRows={2}
                         />
                         <Box>
-                            <Button type="submit" variant="contained" disabled={IsSubmitting || !CanCreate}>
+                            <Button type="submit" variant="contained" disabled={IsSubmitting || !CurrentUser}>
                                 {IsSubmitting ? 'Creating…' : 'Create Campaign'}
                             </Button>
                         </Box>
