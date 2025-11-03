@@ -166,9 +166,14 @@ function LandingPage() {
                 ) : (
                     <Stack direction="row" flexWrap="wrap" gap={1}>
                         {Campaigns.map((c) => (
-                            <Button key={c.id} variant="outlined" component={RouterLink} to={`/campaigns/${c.id}`}>
-                                {c.name}
-                            </Button>
+                            <Card key={c.id} variant="outlined" component={RouterLink} to={`/campaigns/${c.id}`} sx={{ width: 1}}>
+                                <Typography variant="h6" fontWeight="bold">
+                                    {c.name}
+                                </Typography>
+                                <Typography color="text.secondary" variant="body2">
+                                    {c.description}
+                                </Typography>
+                            </Card>
                         ))}
                     </Stack>
                 )}
