@@ -95,6 +95,8 @@ Users endpoints (under `/users`):
 - PATCH `/users/:id` → partial update name/email (conflict checked)
 - DELETE `/users/:id` → 204 No Content
 
+- GET `/users/:id/campaigns` → campaigns this user belongs to with their role
+
 Example (register and login):
 
 ```bash
@@ -109,6 +111,50 @@ curl -sS -X POST http://127.0.0.1:8000/users/login \
 	-d '{"email":"alice@example.com","password":"secret"}'
 ```
 
+Campaigns endpoints (under `/campaigns`):
+
+- GET `/campaigns` → list campaigns (optional `?creatorId=` filter)
+- GET `/campaigns/:id` → campaign by id
+- POST `/campaigns` → create `{ name, description, creatorId }` → 201 Created
+	- Business rule: Creator is automatically added to the campaign as role "DM".
+- GET `/campaigns/:id/users` → list users in the campaign with their role
+
+Example (create a campaign, then list members):
+
+```bash
+# Create a campaign (assumes user id=1 exists)
+curl -sS -X POST http://127.0.0.1:8000/campaigns \
+	-H 'Content-Type: application/json' \
+	-d '{"name":"Lost Mines","description":"Starter box","creatorId":1}'
+
+# List members (creator will be DM by default)
+curl -sS http://127.0.0.1:8000/campaigns/1/users
+```
+
+Campaign membership endpoints (under `/campaign-users`):
+
+- GET `/campaign-users` → list memberships; supports `?campaignId=&userId=` filters
+- POST `/campaign-users` → add membership `{ campaignId, userId, role? }`
+	- Default role: `Player` unless `userId` is the campaign's creator, in which case `DM`.
+	- Constraints: Only the creator can be `DM`; the creator must be `DM`.
+	- Errors: 409 if already a member; 400 for invalid ids or invalid role assignment.
+- PATCH `/campaign-users` → update membership role `{ campaignId, userId, role }` (same constraints)
+- DELETE `/campaign-users` → remove membership `{ campaignId, userId }`
+
+Example (add and update a member):
+
+```bash
+# Add user 2 as a Player to campaign 1 (role defaults to Player)
+curl -sS -X POST http://127.0.0.1:8000/campaign-users \
+	-H 'Content-Type: application/json' \
+	-d '{"campaignId":1,"userId":2}'
+
+# Attempt to set DM for a non-creator (will fail with 400)
+curl -sS -X PATCH http://127.0.0.1:8000/campaign-users \
+	-H 'Content-Type: application/json' \
+	-d '{"campaignId":1,"userId":2,"role":"DM"}'
+```
+
 ## Frontend notes
 
 - Routing is declared in `src/App.jsx` under `AppLayout`.
@@ -118,7 +164,7 @@ curl -sS -X POST http://127.0.0.1:8000/users/login \
 
 ## Development tips
 
-- If you change `prisma/schema.prisma`, run `npm run prisma:generate` and a new migration (`npm run prisma:migrate`).
+- If you change `prisma/schema.prisma`, run `npm run prisma:generate` and create/apply a migration (`npm run prisma:migrate`).
 - You can inspect the database with Prisma Studio: `npm run prisma -- studio` (from `backend/`).
 - Ensure the backend is running before using pages that call the API (e.g., Login and Register).
 - Vite proxy rewrites `/api/*` → backend without the `/api` prefix (configured in `frontend/vite.config.js`).

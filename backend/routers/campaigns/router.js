@@ -39,6 +39,13 @@ export default async function (fastify, opts) {
                 data: { name, description, creatorId },
                 select: { id: true, name: true, description: true, creatorId: true, createdAt: true, updatedAt: true }
             })
+            // Ensure creator is added as DM in membership table (idempotent with unique constraint)
+            try {
+                await prisma.campaignUser.create({ data: { campaignId: created.id, userId: creatorId, role: 'DM' } })
+            } catch (e) {
+                // Ignore unique violations (already present)
+                if (e.code !== 'P2002') throw e
+            }
             reply.code(201)
             return created
         } catch (err) {
@@ -50,5 +57,25 @@ export default async function (fastify, opts) {
             reply.code(500)
             return { message: 'Internal server error' }
         }
+    })
+
+    // List users in a campaign with their roles
+    fastify.get('/:id/users', { schema: schema.GetCampaignUsers }, async (req, reply) => {
+        const { id } = req.params
+        const campaign = await prisma.campaign.findUnique({ where: { id }, select: { id: true } })
+        if (!campaign) {
+            reply.code(404)
+            return { message: 'Campaign not found' }
+        }
+        const memberships = await prisma.campaignUser.findMany({
+            where: { campaignId: id },
+            orderBy: { id: 'asc' },
+            select: {
+                role: true,
+                user: { select: { id: true, name: true, email: true } }
+            }
+        })
+        // Map to output { id, name, email, role }
+        return memberships.map(m => ({ id: m.user.id, name: m.user.name, email: m.user.email, role: m.role }))
     })
 }

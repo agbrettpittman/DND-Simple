@@ -135,6 +135,26 @@ export const DeleteUser = {
     }
 }
 
+export const CampaignLite = {
+    type: 'object',
+    properties: {
+        id: { type: 'integer' },
+        name: { type: 'string' },
+        description: { type: 'string' },
+        role: { type: 'string', enum: ['DM', 'Player'] }
+    }
+}
+
+export const GetUserCampaigns = {
+    summary: 'List campaigns a user belongs to (with role)',
+    tags: ['Users'],
+    params: UserParams,
+    response: {
+        200: { type: 'array', items: CampaignLite },
+        404: ErrorResponse
+    }
+}
+
 // Barrel export for route-level schemas to avoid namespace conflicts in routers
 export const schema = {
     GetAllUsers,
@@ -143,5 +163,6 @@ export const schema = {
     ReplaceUser,
     UpdateUser,
     DeleteUser,
-    LoginUser
+    LoginUser,
+    GetUserCampaigns
 }

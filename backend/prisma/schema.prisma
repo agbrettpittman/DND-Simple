@@ -19,7 +19,8 @@ model User {
   updatedAt DateTime @updatedAt
 
   // Relations
-  campaigns Campaign[]
+  campaigns            Campaign[]
+  campaignMemberships  CampaignUser[]
 }
 
 model Campaign {
@@ -30,5 +31,22 @@ model Campaign {
   creatorId   Int
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  // Relations
+  members CampaignUser[]
 }
  
+// Join table between Campaign and User with role
+model CampaignUser {
+  id          Int          @id @default(autoincrement())
+  campaign    Campaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaignId  Int
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      Int
+  role        String       @default("Player")
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@unique([campaignId, userId])
+}
+

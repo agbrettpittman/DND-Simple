@@ -72,8 +72,29 @@ export const CreateCampaign = {
     }
 }
 
+export const CampaignUserLite = {
+    type: 'object',
+    properties: {
+        id: { type: 'integer' },
+        name: { type: 'string' },
+        email: { type: 'string', format: 'email' },
+        role: { type: 'string', enum: ['DM', 'Player'] }
+    }
+}
+
+export const GetCampaignUsers = {
+    summary: 'List users in a campaign with roles',
+    tags: ['Campaigns'],
+    params: CampaignParams,
+    response: {
+        200: { type: 'array', items: CampaignUserLite },
+        404: ErrorResponse
+    }
+}
+
 export const schema = {
     GetAllCampaigns,
     GetOneCampaign,
-    CreateCampaign
+    CreateCampaign,
+    GetCampaignUsers
 }

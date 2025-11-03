@@ -143,4 +143,23 @@ export default async function (fastify, opts) {
         reply.code(204)
         return null
     })
+
+    // List campaigns a user belongs to (with role)
+    fastify.get('/:id/campaigns', { schema: schema.GetUserCampaigns }, async (req, reply) => {
+        const { id } = req.params
+        const exists = await prisma.user.findUnique({ where: { id }, select: { id: true } })
+        if (!exists) {
+            reply.code(404)
+            return { message: 'User not found' }
+        }
+        const memberships = await prisma.campaignUser.findMany({
+            where: { userId: id },
+            orderBy: { id: 'desc' },
+            select: {
+                role: true,
+                campaign: { select: { id: true, name: true, description: true } }
+            }
+        })
+        return memberships.map(m => ({ id: m.campaign.id, name: m.campaign.name, description: m.campaign.description, role: m.role }))
+    })
 }
