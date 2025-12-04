@@ -3,11 +3,15 @@ import { PrismaClient } from '@prisma/client'
 // Ensure a single PrismaClient instance across hot-reloads in dev
 const globalForPrisma = globalThis
 
-// Provide the database connection via the `adapter` option so the
-// datasource `url` is not required inside `schema.prisma`.
-// For SQLite the DATABASE_URL env var should be like: `file:../data/db/db.sqlite`
+// Ensure `DATABASE_URL` is set. For SQLite the env var should be:
+// `file:../data/db/db.sqlite` (relative to `backend/prisma`). If the
+// env var is missing, default to the repository's local DB path so
+// PrismaClient can initialize without passing constructor overrides.
+if (!process.env.DATABASE_URL) {
+    process.env.DATABASE_URL = 'file:../data/db/db.sqlite'
+}
+
 let prisma = globalForPrisma.__prismaClient || new PrismaClient({
-    adapter: { url: process.env.DATABASE_URL },
     log: ['error', 'warn']
 })
 
