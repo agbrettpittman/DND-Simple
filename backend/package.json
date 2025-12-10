@@ -5,6 +5,7 @@
     "dependencies": {
         "@fastify/swagger": "^9.5.2",
         "@fastify/swagger-ui": "^5.2.3",
+        "@prisma/adapter-better-sqlite3": "^7.1.0",
         "@prisma/client": "^7.1.0",
         "bcrypt": "^6.0.0",
         "better-sqlite3": "^11.8.1",
